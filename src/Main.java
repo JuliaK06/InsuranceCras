@@ -1,54 +1,78 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 // Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
 // then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
-        try{
-            File file=new File("testdata.txt");
-            Scanner sc=new Scanner(file);
-            List<Car> list1=new ArrayList<>();
-            while(sc.hasNext()){
- Car c=new Car();
- c.setVIN(sc.next());
- c.setRegNumber(sc.next());
- c.setYear(sc.nextInt());
- c.setDateOfInsurance(sc.next());
- c.setOwnerFirstName(sc.next());
- c.setOwnerLastName(sc.next());
- list1.add(c);
-            }
-            PriorityQueue<Map.Entry<String, Integer>> list2=new PriorityQueue<>(Collections.reverseOrder());
-            for(Car c1:list1){
-                    Map.Entry<String, Integer> m1 = new  AbstractMap.SimpleEntry<>(c1.getVIN(), 1);
-                    for(Map.Entry<String, Integer>l2:list2){
-                        if(l2.getKey().equals(m1.getKey())){
-                            int n=l2.getValue();
-                            l2.setValue(++n);
-                        }
-                    }
-                    list2.add(m1);
+        Scanner sc = null;
+        List<Car> list1 = new ArrayList<>();
+        Map<String, Integer> insu = new HashMap();
+        Map<String, Stack<String>> regNumb = new HashMap<>();
+        try {
+            Path resource = Paths.get("src", "resources");
+            String absolutepath = resource.toFile().getAbsolutePath();
+            File file = new File(absolutepath + "/testdata.txt");
+            sc = new Scanner(file);
 
-            }
-            for(int i=0;i<5;i++) {
-                Map.Entry<String, Integer> m1= list2.poll();
-                String vin=m1.getKey();
-               String ownerLastName=null;
-               int n=0;
-               for(Car c2:list1){
-                   if(c2.getVIN().equals(vin)&& !c2.getOwnerLastName().equals(ownerLastName)){
-                       n++;
-                   }
-                   ownerLastName=c2.getOwnerLastName();
-               }
-                System.out.println(vin+" "+m1.getValue()+ n);
+            while (sc.hasNext()) {
 
-
+                String vin = sc.next();
+                String RegNumber = sc.next();
+                int year = sc.nextInt();
+                String Date = sc.next();
+                String OwnerFirstname = sc.next();
+                String tOwnerLastName = sc.next();
+                Car c = new Car(vin, RegNumber, year, Date, OwnerFirstname, tOwnerLastName);
+                list1.add(c);
             }
-        }catch(FileNotFoundException e){
-            System.out.println("File not found");
-        }
+            for (Car c1 : list1) {
+                String vin = c1.getVIN();
+                String RegNumber = c1.getRegNumber();
+                if (regNumb.get(vin) == null) {
+                    regNumb.put(vin, new Stack<>());
+                }
+                regNumb.get(vin).add(RegNumber);
+
+                if (insu.containsKey(vin)) {
+                    insu.put(vin, insu.get(vin) + 1);
+                } else {
+                    insu.put(vin, 1);
+                }
+            }
+
+for(int i=0;i<5;i++){
+            Map.Entry<String, Integer> entryWithMaxValue = null;
+            for (Map.Entry<String, Integer> currentEntry :
+                    insu.entrySet()) {
+
+                if (
+                    // If this is the first entry, set result as
+                    // this
+                        entryWithMaxValue == null
+
+                                // If this entry's value is more than the
+                                // max value Set this entry as the max
+                                || currentEntry.getValue().compareTo(
+                                entryWithMaxValue.getValue())
+                                > 0) {
+
+                    entryWithMaxValue = currentEntry;
+                }
+            }
+ // Return the entry with highest value
+            System.out.println(regNumb.get(entryWithMaxValue.getKey()).peek() + " " + insu.get(entryWithMaxValue.getKey()) + " " + " " + regNumb.get(entryWithMaxValue.getKey()).size());
+    insu.remove(entryWithMaxValue.getKey());
+}}
+catch (FileNotFoundException e) {
+            e.getMessage();
+        } finally {
+            sc.close();
         }
     }
+}
+
+
